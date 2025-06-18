@@ -103,128 +103,141 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 });
 
 // Listen for messages from blocked.html to track attempts
-chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'blocked_attempt') {
-    try {
-      // Load analytics directly since we can't import in service worker
-      const analytics = await new Promise((resolve) => {
-        chrome.storage.sync.get(["analytics"], (result) => {
-          if (result.analytics) {
-            // Merge with default structure
-            const defaultAnalytics = {
-              totalBlocked: 0,
-              sitesStats: {},
-              lastReset: new Date().toISOString(),
-              timeBasedStats: {
-                hourly: Array(24).fill(0),
-                daily: {},
-                weekly: Array(7).fill(0)
-              },
-              categoryStats: {
-                social: 0,
-                entertainment: 0,
-                news: 0,
-                messaging: 0,
-                shopping: 0,
-                other: 0
-              },
-              timeSaved: 0,
-              productivityScore: 100,
-              averageVisitDuration: 15
-            };
-            resolve({ ...defaultAnalytics, ...result.analytics });
-          } else {
-            resolve({
-              totalBlocked: 0,
-              sitesStats: {},
-              lastReset: new Date().toISOString(),
-              timeBasedStats: {
-                hourly: Array(24).fill(0),
-                daily: {},
-                weekly: Array(7).fill(0)
-              },
-              categoryStats: {
-                social: 0,
-                entertainment: 0,
-                news: 0,
-                messaging: 0,
-                shopping: 0,
-                other: 0
-              },
-              timeSaved: 0,
-              productivityScore: 100,
-              averageVisitDuration: 15
-            });
-          }
-        });
+    // Handle the tracking asynchronously
+    handleBlockedAttempt(message.domain, message.site)
+      .then(() => {
+        sendResponse({ success: true });
+      })
+      .catch((error) => {
+        console.error('Error tracking blocked attempt:', error);
+        sendResponse({ success: false, error: error.message });
       });
-
-      // Track the blocked attempt
-      const now = new Date();
-      const domain = message.domain;
-      const site = message.site;
-      
-      // Site categories
-      const siteCategories = {
-        'facebook.com': 'social',
-        'twitter.com': 'social',
-        'instagram.com': 'social',
-        'reddit.com': 'social',
-        'youtube.com': 'entertainment',
-        'n12.co.il': 'news',
-        'ynet.co.il': 'news',
-        'telegram.org': 'messaging',
-        'web.whatsapp.com': 'messaging'
-      };
-
-      // Update analytics
-      analytics.totalBlocked++;
-      
-      // Site-specific stats
-      if (!analytics.sitesStats[site]) {
-        analytics.sitesStats[site] = 0;
-      }
-      analytics.sitesStats[site]++;
-      
-      // Time-based tracking
-      const hour = now.getHours();
-      const day = now.getDay();
-      const dateStr = now.toDateString();
-      
-      analytics.timeBasedStats.hourly[hour]++;
-      analytics.timeBasedStats.weekly[day]++;
-      
-      if (!analytics.timeBasedStats.daily[dateStr]) {
-        analytics.timeBasedStats.daily[dateStr] = 0;
-      }
-      analytics.timeBasedStats.daily[dateStr]++;
-      
-      // Category tracking
-      const category = siteCategories[site] || 'other';
-      analytics.categoryStats[category]++;
-      
-      // Time saved calculation
-      analytics.timeSaved += analytics.averageVisitDuration;
-
-      // Save updated analytics
-      await new Promise((resolve, reject) => {
-        chrome.storage.sync.set({ analytics: analytics }, () => {
-          if (chrome.runtime.lastError) {
-            reject(chrome.runtime.lastError);
-          } else {
-            resolve();
-          }
-        });
-      });
-
-      sendResponse({ success: true });
-    } catch (error) {
-      console.error('Error tracking blocked attempt:', error);
-      sendResponse({ success: false, error: error.message });
-    }
+    
+    // Return true to indicate we'll send a response asynchronously
+    return true;
   }
-  return true; // Keep the message channel open for async response
 });
+
+// Async function to handle blocked attempts
+async function handleBlockedAttempt(domain, site) {
+  try {
+    // Load analytics directly since we can't import in service worker
+    const analytics = await new Promise((resolve) => {
+      chrome.storage.sync.get(["analytics"], (result) => {
+        if (result.analytics) {
+          // Merge with default structure
+          const defaultAnalytics = {
+            totalBlocked: 0,
+            sitesStats: {},
+            lastReset: new Date().toISOString(),
+            timeBasedStats: {
+              hourly: Array(24).fill(0),
+              daily: {},
+              weekly: Array(7).fill(0)
+            },
+            categoryStats: {
+              social: 0,
+              entertainment: 0,
+              news: 0,
+              messaging: 0,
+              shopping: 0,
+              other: 0
+            },
+            timeSaved: 0,
+            productivityScore: 100,
+            averageVisitDuration: 15
+          };
+          resolve({ ...defaultAnalytics, ...result.analytics });
+        } else {
+          resolve({
+            totalBlocked: 0,
+            sitesStats: {},
+            lastReset: new Date().toISOString(),
+            timeBasedStats: {
+              hourly: Array(24).fill(0),
+              daily: {},
+              weekly: Array(7).fill(0)
+            },
+            categoryStats: {
+              social: 0,
+              entertainment: 0,
+              news: 0,
+              messaging: 0,
+              shopping: 0,
+              other: 0
+            },
+            timeSaved: 0,
+            productivityScore: 100,
+            averageVisitDuration: 15
+          });
+        }
+      });
+    });
+
+    // Track the blocked attempt
+    const now = new Date();
+    
+    // Site categories
+    const siteCategories = {
+      'facebook.com': 'social',
+      'twitter.com': 'social',
+      'instagram.com': 'social',
+      'reddit.com': 'social',
+      'youtube.com': 'entertainment',
+      'n12.co.il': 'news',
+      'ynet.co.il': 'news',
+      'telegram.org': 'messaging',
+      'web.whatsapp.com': 'messaging'
+    };
+
+    // Update analytics
+    analytics.totalBlocked++;
+    
+    // Site-specific stats
+    if (!analytics.sitesStats[site]) {
+      analytics.sitesStats[site] = 0;
+    }
+    analytics.sitesStats[site]++;
+    
+    // Time-based tracking
+    const hour = now.getHours();
+    const day = now.getDay();
+    const dateStr = now.toDateString();
+    
+    analytics.timeBasedStats.hourly[hour]++;
+    analytics.timeBasedStats.weekly[day]++;
+    
+    if (!analytics.timeBasedStats.daily[dateStr]) {
+      analytics.timeBasedStats.daily[dateStr] = 0;
+    }
+    analytics.timeBasedStats.daily[dateStr]++;
+    
+    // Category tracking
+    const category = siteCategories[site] || 'other';
+    analytics.categoryStats[category]++;
+    
+    // Time saved calculation
+    analytics.timeSaved += analytics.averageVisitDuration;
+
+    // Save updated analytics
+    await new Promise((resolve, reject) => {
+      chrome.storage.sync.set({ analytics: analytics }, () => {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError);
+        } else {
+          resolve();
+        }
+      });
+    });
+
+    console.log('Successfully tracked blocked attempt for:', site);
+  } catch (error) {
+    console.error('Error in handleBlockedAttempt:', error);
+    throw error;
+  }
+}
 
 // Optional: Add listener for extension icon click
 chrome.action.onClicked.addListener((tab) => {
