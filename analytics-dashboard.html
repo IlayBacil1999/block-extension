@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Analytics Dashboard - Website Blocker</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    
+    .header h1 {
+      margin: 0;
+      font-size: 2.5em;
+      font-weight: 300;
+    }
+    
+    .nav-links {
+      margin-top: 20px;
+    }
+    
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      margin: 0 15px;
+      padding: 8px 16px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.1);
+      transition: background 0.3s;
+    }
+    
+    .nav-links a:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    
+    .content {
+      padding: 40px;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    
+    .stat-card {
+      background: #f8f9fa;
+      padding: 25px;
+      border-radius: 12px;
+      text-align: center;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+      border-color: #667eea;
+      transform: translateY(-2px);
+    }
+    
+    .stat-value {
+      font-size: 2.5em;
+      font-weight: bold;
+      color: #667eea;
+      margin-bottom: 5px;
+    }
+    
+    .stat-label {
+      color: #666;
+      font-size: 0.9em;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .productivity-score {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+    
+    .productivity-score .stat-value {
+      color: white;
+    }
+    
+    .section {
+      margin-bottom: 40px;
+    }
+    
+    .section-title {
+      font-size: 1.5em;
+      margin-bottom: 20px;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .heatmap-container {
+      background: #f8f9fa;
+      padding: 25px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: repeat(24, 1fr);
+      gap: 3px;
+      margin-bottom: 15px;
+    }
+    
+    .heatmap-cell {
+      aspect-ratio: 1;
+      border-radius: 3px;
+      background: #e9ecef;
+      position: relative;
+      cursor: pointer;
+    }
+    
+    .heatmap-cell.intensity-1 { background: #c8e6c9; }
+    .heatmap-cell.intensity-2 { background: #81c784; }
+    .heatmap-cell.intensity-3 { background: #4caf50; }
+    .heatmap-cell.intensity-4 { background: #388e3c; }
+    .heatmap-cell.intensity-5 { background: #2e7d32; }
+    
+    .heatmap-legend {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.8em;
+      color: #666;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+    }
+    
+    .insights-list {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .insight-item {
+      background: #f8f9fa;
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      border-left: 4px solid #667eea;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .insight-icon {
+      font-size: 1.5em;
+    }
+    
+    .category-chart {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+    
+    .category-item {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    
+    .category-bar {
+      height: 8px;
+      background: #e9ecef;
+      border-radius: 4px;
+      margin: 10px 0;
+      overflow: hidden;
+    }
+    
+    .category-progress {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      transition: width 0.5s ease;
+    }
+    
+    .goal-progress {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 12px;
+    }
+    
+    .progress-bar {
+      height: 20px;
+      background: #e9ecef;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #28a745, #20c997);
+      transition: width 0.5s ease;
+    }
+    
+    .focus-sessions {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 12px;
+    }
+    
+    .session-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #dee2e6;
+    }
+    
+    .session-item:last-child {
+      border-bottom: none;
+    }
+    
+    .session-duration {
+      font-weight: bold;
+      color: #667eea;
+    }
+    
+    .refresh-btn {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: transform 0.2s;
+      margin-bottom: 20px;
+    }
+    
+    .refresh-btn:hover {
+      transform: translateY(-2px);
+    }
+    
+    .empty-state {
+      text-align: center;
+      color: #666;
+      font-style: italic;
+      padding: 40px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📊 Analytics Dashboard</h1>      <div class="nav-links">
+        <a href="options.html">⚙️ Settings</a>
+        <a href="#" id="closeBtn">❌ Close</a>
+      </div>
+    </div>    <div class="content">
+      <button class="refresh-btn" id="refreshBtn">🔄 Refresh Data</button>
+
+      <!-- Core Stats -->
+      <div class="stats-grid">
+        <div class="stat-card productivity-score">
+          <div class="stat-value" id="productivityScore">--</div>
+          <div class="stat-label">Productivity Score</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="totalBlocked">--</div>
+          <div class="stat-label">Total Blocked</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="timeSaved">--</div>
+          <div class="stat-label">Time Saved (min)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="todayBlocks">--</div>
+          <div class="stat-label">Today's Blocks</div>
+        </div>
+      </div>
+
+      <!-- Productivity Insights -->
+      <div class="section">
+        <h2 class="section-title">💡 Productivity Insights</h2>
+        <ul class="insights-list" id="insightsList">
+          <li class="insight-item">
+            <span class="insight-icon">🔄</span>
+            <span>Loading insights...</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Activity Heatmap -->
+      <div class="section">
+        <h2 class="section-title">🗓️ Activity Heatmap - Hourly Blocks</h2>
+        <div class="heatmap-container">
+          <div class="heatmap-grid" id="heatmapGrid"></div>
+          <div class="heatmap-legend">
+            <span>Less</span>
+            <div class="legend-item">
+              <div class="legend-color" style="background: #e9ecef;"></div>
+              <span>0</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: #c8e6c9;"></div>
+              <span>1-5</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: #81c784;"></div>
+              <span>6-15</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: #4caf50;"></div>
+              <span>16-30</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: #388e3c;"></div>
+              <span>31-50</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: #2e7d32;"></div>
+              <span>50+</span>
+            </div>
+            <span>More</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Breakdown -->
+      <div class="section">
+        <h2 class="section-title">📂 Category Breakdown</h2>
+        <div class="category-chart" id="categoryChart"></div>
+      </div>
+
+      <!-- Goal Progress -->
+      <div class="section">
+        <h2 class="section-title">🎯 Goal Progress</h2>
+        <div class="goal-progress">
+          <div id="goalProgress">
+            <div class="empty-state">No goals set yet. Configure them in Settings!</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Focus Sessions -->
+      <div class="section">
+        <h2 class="section-title">⏱️ Recent Focus Sessions</h2>
+        <div class="focus-sessions">
+          <div id="focusSessions">
+            <div class="empty-state">No focus sessions recorded yet.</div>
+          </div>
+        </div>
+      </div>
+    </div>  </div>
+
+  <script src="analytics.js"></script>
+  <script src="analytics-dashboard.js"></script>
+</body>
+</html>

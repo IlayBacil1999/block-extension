@@ -3,7 +3,7 @@
   "name": "Website Blocker",
   "version": "1.0",
   "description": "Blocks access to specified websites.",
-  "permissions": ["declarativeNetRequest", "storage"],
+  "permissions": ["declarativeNetRequest", "storage", "activeTab", "webNavigation"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"
@@ -27,5 +27,8 @@
       "enabled": true,
       "path": "rules.json"
     }]
-  }
+  },  "web_accessible_resources": [{
+    "resources": ["blocked.html", "blocked.js", "analytics.js"],
+    "matches": ["<all_urls>"]
+  }]
 }

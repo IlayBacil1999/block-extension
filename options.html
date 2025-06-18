@@ -278,13 +278,148 @@
       text-transform: uppercase;
       letter-spacing: 1px;
     }
+    
+    /* Analytics styles */
+    .analytics-section {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 30px;
+      border-left: 4px solid #9c27b0;
+    }
+    
+    .analytics-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .analytics-title {
+      font-size: 1.4em;
+      color: #7b1fa2;
+      margin: 0;
+    }
+    
+    .analytics-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+    
+    .analytics-card {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    
+    .analytics-value {
+      font-size: 1.8em;
+      font-weight: bold;
+      color: #9c27b0;
+      margin: 5px 0;
+    }
+    
+    .analytics-label {
+      font-size: 0.8em;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .top-blocked {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    
+    .top-blocked-header {
+      background: #9c27b0;
+      color: white;
+      padding: 10px 15px;
+      font-weight: 500;
+    }
+    
+    .analytics-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .analytics-item {
+      padding: 12px 15px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .analytics-item:last-child {
+      border-bottom: none;
+    }
+    
+    .site-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .site-name {
+      font-weight: 500;
+      color: #333;
+    }
+    
+    .block-count {
+      font-size: 0.8em;
+      color: #666;
+    }
+    
+    .progress-container {
+      flex: 1;
+      margin-left: 20px;
+      max-width: 150px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .progress-bar {
+      height: 8px;
+      background: #ba68c8;
+      border-radius: 4px;
+    }
+    
+    .percentage {
+      font-size: 0.9em;
+      color: #9c27b0;
+      font-weight: 500;
+      min-width: 40px;
+      text-align: right;
+    }
+    
+    .no-data {
+      padding: 15px;
+      text-align: center;
+      color: #999;
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
+  <div class="container">    <div class="header">
       <h1>🛡️ Website Blocker</h1>
       <p>Take control of your browsing experience</p>
+      <div style="margin-top: 15px;">        <a href="analytics-dashboard.html" target="_blank" 
+           id="analyticsLink"
+           style="background: rgba(255,255,255,0.2); color: white; text-decoration: none; 
+                  padding: 8px 16px; border-radius: 6px; font-size: 0.9em; 
+                  transition: background 0.3s; display: inline-block;">
+          📊 View Analytics Dashboard
+        </a>
+      </div>
     </div>
     
     <div class="content">
@@ -296,6 +431,48 @@
         <div class="stat-card">
           <div class="stat-number" id="rulesCount">0</div>
           <div class="stat-label">Active Rules</div>
+        </div>      </div>
+      
+      <!-- Focus Session Controls -->
+      <div class="analytics-section" style="margin-bottom: 30px;">
+        <div class="analytics-header">
+          <h2 class="analytics-title">⏱️ Focus Session</h2>
+        </div>
+        
+        <div style="text-align: center; padding: 20px;">
+          <div id="sessionStatus" style="font-size: 1.2em; margin-bottom: 15px; color: #666;">
+            No active session
+          </div>
+          <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+            <button id="startSessionBtn" class="btn-primary">🚀 Start Focus Session</button>
+            <button id="endSessionBtn" class="btn-secondary" disabled>⏹️ End Session</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Analytics Section -->
+      <div class="analytics-section">
+        <div class="analytics-header">
+          <h2 class="analytics-title">📊 Browsing Analytics</h2>
+          <button id="resetStatsBtn" class="btn-secondary">Reset Stats</button>
+        </div>
+        
+        <div class="analytics-stats">
+          <div class="analytics-card">
+            <div class="analytics-value" id="totalBlockedCount">0</div>
+            <div class="analytics-label">Total Blocks</div>
+          </div>
+          <div class="analytics-card">
+            <div class="analytics-value" id="lastReset">Never</div>
+            <div class="analytics-label">Last Reset</div>
+          </div>
+        </div>
+        
+        <div class="top-blocked">
+          <div class="top-blocked-header">Top Blocked Sites</div>
+          <ul class="analytics-list" id="topBlockedSites">
+            <li class="no-data">No blocking data yet</li>
+          </ul>
         </div>
       </div>
       
