@@ -6,7 +6,9 @@ let blockedSites = [
   "reddit.com",
   "youtube.com",
   "n12.co.il",
-  "ynet.co.il"
+  "ynet.co.il",
+  "telegram.org",
+  "web.whatsapp.com"
 ];
 
 // Function to create rules for declarativeNetRequest
